@@ -9,7 +9,7 @@ help:
 	@echo "  clean        - Clean up generated files"
 	@echo "  docker-build - Build Docker image"
 	@echo "  docker-run   - Run scanner in Docker"
-	@echo "  scan-single  - Scan a single URL (usage: make scan-single URL=https://example.com)"
+	@echo "  scan-single  - Scan a single URL (usage: make scan-single URL=https://example.com [CALLBACK_URL=https://callback.com])"
 	@echo "  scan-batch   - Scan multiple URLs from file (usage: make scan-batch FILE=urls.txt)"
 
 # Install dependencies
@@ -53,11 +53,16 @@ docker-run:
 scan-single:
 	@if [ -z "$(URL)" ]; then \
 		echo "Error: URL parameter is required"; \
-		echo "Usage: make scan-single URL=https://jira.example.com"; \
+		echo "Usage: make scan-single URL=https://jira.example.com [CALLBACK_URL=https://your-callback-server.com]"; \
 		exit 1; \
 	fi
 	@echo "Scanning single URL: $(URL)"
-	python3 jira-scanner.py -u $(URL)
+	@if [ -n "$(CALLBACK_URL)" ]; then \
+		echo "Using callback URL: $(CALLBACK_URL)"; \
+		python3 jira-scanner.py -u $(URL) --callback-url $(CALLBACK_URL); \
+	else \
+		python3 jira-scanner.py -u $(URL); \
+	fi
 
 # Scan multiple URLs from file
 scan-batch:
@@ -96,11 +101,16 @@ lint:
 docker-scan-single:
 	@if [ -z "$(URL)" ]; then \
 		echo "Error: URL parameter is required"; \
-		echo "Usage: make docker-scan-single URL=https://jira.example.com"; \
+		echo "Usage: make docker-scan-single URL=https://jira.example.com [CALLBACK_URL=https://your-callback-server.com]"; \
 		exit 1; \
 	fi
 	@echo "Scanning single URL with Docker: $(URL)"
-	docker run --rm -v $(PWD)/output:/app/output jira-security-scanner -u $(URL)
+	@if [ -n "$(CALLBACK_URL)" ]; then \
+		echo "Using callback URL: $(CALLBACK_URL)"; \
+		docker run --rm -v $(PWD)/output:/app/output jira-security-scanner -u $(URL) --callback-url $(CALLBACK_URL); \
+	else \
+		docker run --rm -v $(PWD)/output:/app/output jira-security-scanner -u $(URL); \
+	fi
 
 # Security scan batch with Docker
 docker-scan-batch:
