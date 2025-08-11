@@ -26,13 +26,15 @@ A comprehensive security scanner for Jira instances that detects various vulnera
 
 - **Cloud Metadata Testing**: Detects access to cloud provider metadata (AWS, GCP, Azure, etc.)
 
+- **Blind SSRF Testing**: Tests for blind SSRF vulnerabilities using custom callback URLs
+
 - **Comprehensive Reporting**: Generates both JSON and text reports with detailed findings
 
 ## Installation
 
 1. Clone the repository:
 ```bash
-git clone [<repository-url>](https://github.com/sevbandonmez/jira-scanner.git)
+git clone <repository-url>
 cd jira-scanner
 ```
 
@@ -75,6 +77,7 @@ python3 jira-scanner.py -u https://jira.example.com \
 - `-i, --insecure`: Disable SSL verification
 - `-t, --timeout`: Request timeout in seconds (default: 15)
 - `-r, --retries`: Number of retries (default: 3)
+- `--callback-url`: Callback URL for blind SSRF testing
 - `-h, --help`: Show help message
 
 ### Examples
@@ -97,6 +100,11 @@ python3 jira-scanner.py -f urls.txt -o reports/ -i
 4. **High timeout for slow networks**:
 ```bash
 python3 jira-scanner.py -u https://jira.example.com -t 60 -r 5
+```
+
+5. **Blind SSRF testing with callback URL**:
+```bash
+python3 jira-scanner.py -u https://jira.example.com --callback-url https://your-callback-server.com
 ```
 
 ## Output
@@ -138,6 +146,14 @@ The tool generates two types of reports:
 }
 ```
 
+## Blind SSRF Testing
+
+The tool includes blind SSRF (Server-Side Request Forgery) testing capabilities. To use this feature:
+
+1. **Set up a callback server**: You need to run a web server that can receive HTTP requests
+2. **Provide the callback URL**: Use the `--callback-url` parameter to specify your server's URL
+3. **Monitor for requests**: The scanner will send unique requests to your callback server if SSRF vulnerabilities exist
+
 ## Security Considerations
 
 ⚠️ **Important**: This tool is designed for authorized security testing only. Always ensure you have proper authorization before scanning any systems.
@@ -169,7 +185,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Author
 
 - **Author**: sevbandonmez
-- **Version**: 1.0
+- **Version**: 2.1.0
 
 ## Disclaimer
 
