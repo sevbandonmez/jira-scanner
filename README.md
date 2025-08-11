@@ -2,6 +2,8 @@
 
 A comprehensive security scanner for Jira instances that detects various vulnerabilities, information disclosures, and security misconfigurations.
 
+<img width="2000" height="700" alt="image" src="https://github.com/user-attachments/assets/c8a3e8b7-45a3-4042-9349-8c66e04dac8b" />
+
 ## Features
 
 - **CVE Detection**: Tests for known Jira vulnerabilities including:
