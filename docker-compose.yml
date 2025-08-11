@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  jira-scanner:
+    build: .
+    container_name: jira-security-scanner
+    volumes:
+      - ./output:/app/output
+      - ./urls.txt:/app/urls.txt:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: ["--help"]
+    restart: "no"
+    
+  # Example service for testing with a sample Jira instance
+  # Uncomment and modify as needed
+  # test-jira:
+  #   image: atlassian/jira-software:latest
+  #   container_name: test-jira
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - JIRA_HOME=/var/atlassian/application-data/jira
+  #   volumes:
+  #     - jira_data:/var/atlassian/application-data/jira
+  #   restart: unless-stopped
+
+# volumes:
+#   jira_data:

@@ -1,0 +1,15 @@
+requests>=2.28.0
+urllib3>=1.26.0
+argparse
+threading
+socket
+hashlib
+base64
+xml.etree.ElementTree
+datetime
+re
+random
+string
+json
+os
+time
