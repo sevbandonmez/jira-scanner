@@ -3,7 +3,7 @@
 """
 Advanced Jira Security Assessment Tool
 Author: sevbandonmez
-Version: 2.1.0
+Version: 1.0
 """
 
 import sys
@@ -43,10 +43,11 @@ class Colors:
     DIM = '\033[2m'
 
 class JiraSecurityScanner:
-    def __init__(self, verify_ssl=True, timeout=15, retries=3):
+    def __init__(self, verify_ssl=True, timeout=15, retries=3, callback_url=None):
         self.verify_ssl = verify_ssl
         self.timeout = timeout
         self.retries = retries
+        self.callback_url = callback_url
         self.session = requests.Session()
         self.session.headers.update({
             'User-Agent': self._generate_random_ua(),
@@ -477,21 +478,32 @@ class JiraSecurityScanner:
         """Advanced blind SSRF testing"""
         self._log_info("Checking for blind SSRF vulnerabilities...")
         
-        # Generate unique callback URL (you would need to set up your own callback server)
+        if not self.callback_url:
+            self._log_warning("No callback URL provided. Skipping blind SSRF tests.")
+            self._log_info("Use --callback-url parameter to enable blind SSRF testing.")
+            return
+        
+        # Generate unique callback ID
         callback_id = hashlib.md5(f"{base_url}{datetime.now()}".encode()).hexdigest()[:10]
-        callback_url = f"http://callback.example.com/{callback_id}"
+        
+        # Use user-provided callback URL with unique ID
+        if self.callback_url.endswith('/'):
+            test_callback_url = f"{self.callback_url}{callback_id}"
+        else:
+            test_callback_url = f"{self.callback_url}/{callback_id}"
         
         ssrf_endpoints = [
-            f"/plugins/servlet/oauth/users/icon-uri?consumerUri={callback_url}",
-            f"/plugins/servlet/gadgets/makeRequest?url={callback_url}",
-            f"/rest/api/2/user/avatar?url={callback_url}",
+            f"/plugins/servlet/oauth/users/icon-uri?consumerUri={test_callback_url}",
+            f"/plugins/servlet/gadgets/makeRequest?url={test_callback_url}",
+            f"/rest/api/2/user/avatar?url={test_callback_url}",
             f"/secure/attachment/{callback_id}/callback.txt"
         ]
         
         for endpoint in ssrf_endpoints:
             response = self._make_request('GET', base_url + endpoint)
             if response:
-                # In a real scenario, you would check your callback server for requests
+                self._log_info(f"Blind SSRF test sent to: {test_callback_url}")
+                self._log_info(f"Check your callback server for requests from: {base_url}")
                 self._log_info(f"Potential SSRF endpoint tested: {endpoint}")
     
     def check_information_disclosure(self, base_url):
@@ -877,7 +889,7 @@ def print_usage():
     usage = f"""
 {Colors.CYAN}Advanced Jira Security Assessment Tool{Colors.RESET}
 Author: sevbandonmez
-Version: 2.1.0
+Version: 1.0
 
 {Colors.YELLOW}Usage:{Colors.RESET}
   python3 jira_scanner.py -u <target_url> [options]
@@ -891,12 +903,14 @@ Version: 2.1.0
   -i, --insecure      Disable SSL verification
   -t, --timeout       Request timeout in seconds (default: 15)
   -r, --retries       Number of retries (default: 3)
+  --callback-url      Callback URL for blind SSRF testing
   -h, --help          Show this help message
 
 {Colors.YELLOW}Examples:{Colors.RESET}
   python3 jira_scanner.py -u https://jira.example.com
   python3 jira_scanner.py -f urls.txt -o reports/ -i
   python3 jira_scanner.py -u https://jira.example.com -c "JSESSIONID=ABC123"
+  python3 jira_scanner.py -u https://jira.example.com --callback-url https://your-callback-server.com
 """
     print(usage)
 
@@ -910,6 +924,7 @@ def main():
     parser.add_argument('-i', '--insecure', action='store_true', help='Disable SSL verification')
     parser.add_argument('-t', '--timeout', type=int, default=15, help='Request timeout')
     parser.add_argument('-r', '--retries', type=int, default=3, help='Number of retries')
+    parser.add_argument('--callback-url', help='Callback URL for blind SSRF testing')
     parser.add_argument('-h', '--help', action='store_true', help='Show help')
     
     args = parser.parse_args()
@@ -930,7 +945,8 @@ def main():
     scanner = JiraSecurityScanner(
         verify_ssl=not args.insecure,
         timeout=args.timeout,
-        retries=args.retries
+        retries=args.retries,
+        callback_url=args.callback_url
     )
     
     # Set authentication cookie if provided
