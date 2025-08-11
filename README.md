@@ -32,7 +32,7 @@ A comprehensive security scanner for Jira instances that detects various vulnera
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone [<repository-url>](https://github.com/sevbandonmez/jira-scanner.git)
 cd jira-scanner
 ```
 
@@ -169,7 +169,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Author
 
 - **Author**: sevbandonmez
-- **Version**: 2.1.0
+- **Version**: 1.0
 
 ## Disclaimer
 
